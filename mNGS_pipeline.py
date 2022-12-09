@@ -19,6 +19,7 @@ def main(argv):
     fastqc = conn.get('parameters', 'fastqc')
     adapters = conn.get('parameters', 'adapters')
     jobsNumber = conn.get('parameters', 'jobsNumber')
+    threadsNumber = conn.get('parameters', 'threadsNumber')
     sampleDescFilePath = conn.get('parameters', 'sampleDescFilePath')
     kraken2 = conn.get('parameters', 'kraken2')
     metaphlan4 = conn.get('parameters', 'metaphlan4')
@@ -35,7 +36,11 @@ def main(argv):
     if not databasePath:
         print("error! please input database path !")
     if not jobsNumber:
-        print("error! please input jobNumber !")
+        print("default parallel number 1!")
+        jobsNumber = 1
+    if not threadsNumber:
+        print("default threads Number 4!")
+        threadsNumber = 1
 
     # create workDir
     curDir = os.getcwd()
@@ -62,10 +67,6 @@ def main(argv):
         os.system("sudo mkdir -p root/humann3/utility_mapping")
         os.system("sudo mkdir -p root/humann3/chocophlan")
         os.system("sudo mkdir -p root/humann3/uniref")
-
-        os.system("humann_databases --download utility_mapping full root/db/humann3/utility_mapping ")
-        os.system("humann_databases --download chocophlan full root/db/humann3/chocophlan")
-        os.system("humann_databases --download uniref uniref90_diamond  root/db/humann3/uniref")
 
     # quality control, kneaddata, trimmomatic + bowtie2
     print("step1:running quality control! ")
@@ -132,7 +133,7 @@ def main(argv):
 
     # run kraken2 and Braken
     if kraken2 == "yes":
-        print("run kraken2 analyse")
+        print("run Kraken2 analyse")
         os.system(" mkdir -p " + work_Dir + "/temp/kraken2")
 
         if qc == 'yes':
@@ -166,13 +167,18 @@ def main(argv):
         os.system("header=`tail -n 1 "+sampleDescFilePath + " | cut -f 1` ")
         os.system("tail -n+2 "+work_Dir+"/temp/kraken2/${header}.mpa | LC_ALL=C sort | cut -f 1 | "
         "sed \"1 s/^/Taxonomy\n/\" > temp/kraken2/0header_count")
+        os.system(" ")
 
+        print(" run Bracken !")
+
+
+        print(" run visualization !")
 
 
 
     # merge the data
     if qc == "yes":
-        os.system(" for i in `tail -n+2 " + sampleDescFilePath + " | cut -f`; do "
+        os.system(" for i in `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; do "
                   " mkdir -p " + work_Dir + "/temp/merge"
                   " cat" + work_Dir + "/temp/qc/${i}/${i}_?.fastq "
                   " > " + " ")
@@ -180,7 +186,9 @@ def main(argv):
     #
     if metaphlan4 == "yes":
         print("run metaphlan4 for species annotation, please wait")
-        os.system("source ~/.bashrc ; conda activate mpa4; ")
+        os.system("source ~/.bashrc ; conda activate mpa4;"
+                  " ")
+
 
     #  run humann3
     if humann3 == "yes":

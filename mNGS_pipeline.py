@@ -82,12 +82,12 @@ def main(argv):
       "-o " + work_Dir + "/temp/qc/{1} -v -t 4 --remove-intermediate-output"
       "--trimmomatic "+envirs+"/fastqc/share/trimmomatic/ "
       "--trimmomatic-options 'ILLUMINACLIP:"+envirs+"/fastqc/share/trimmomatic/adapters/" + adapters + ":2:40:15 "
-      "SLIDINGWINDOW:10:20 MINLEN:50 -threads 4'"
+      "SLIDINGWINDOW:10:20 MINLEN:50 -threads " + threadsNumber + "'"
       "--reorder --bowtie2-options '--very-sensitive --dovetail'"
       "-db "+db+"/kneaddata/human_genome"
       "::: `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; "
       "conda deactivate QC")
-      #remove intermediate file
+      # remove intermediate file
       os.system("source ~/.bashrc ; conda activate QC;"
                 "for i in `tail -n+2 " + sampleDescFilePath + " ` | cut -f 1; do"
                 "rm -rf " + work_Dir+"/temp/qc/${i}/*contam* "
@@ -141,7 +141,7 @@ def main(argv):
             os.system("source ~/.bashrc ; conda activate kraken2;"
             "parallel -j "+jobsNumber+" "
             "kraken2 --db"+db+"/kraken2 --paired "+work_Dir+"/temp/qc/{1}/{1}_1_kneaddata_paired_?.fastq"
-            "--threads 10 --use-names --report-zero-counts"
+            "--threads " + threadsNumber + " --use-names --report-zero-counts"
             "--report "+work_Dir+"/temp/kraken2/{1}/{1}.report"
             "--output "+work_Dir+"/temp/kraken2/{1}/{1}.output"
             "::: `tail -n+2 " + sampleDescFilePath + " | cut -f1`"
@@ -150,7 +150,7 @@ def main(argv):
             os.system("source ~/.bashrc ; conda activate kraken2;"
             "parallel -j " + jobsNumber + " "
             "kraken2 --db" + db + "/kraken2 --paired " + fqFilePath + "/{1}_paired_?.fastq"
-            "--threads 10 --use-names --report-zero-counts"
+            "--threads " + threadsNumber + " --use-names --report-zero-counts"
             "--report " + work_Dir + "/temp/kraken2/{1}/{1}.report"
             "--output " + work_Dir + "/temp/kraken2/{1}/{1}.output"
             "::: `tail -n+2 " + sampleDescFilePath + " | cut -f1`"
@@ -218,7 +218,7 @@ def main(argv):
 
         os.system("mkdir -p " + work_Dir + "/kraken2/result/alpha-bracken")
         for i in alpha_diversity:
-            os.system("Rscript  /home/speedy-micro/script/alpha_boxplot.R"
+            os.system("Rscript  /home/Speedy-Mcrio/script/alpha_boxplot.R"
             "-i" + work_Dir + "/kraken2/result/bracken." + i + ".alpha"
             "-a" + i + "-d" + sampleDescFilePath + "-n Group -w 90 -e 60 -o " + work_Dir + "/kraken2/result/alpha-bracken;done")
 
@@ -229,7 +229,7 @@ def main(argv):
             os.system("/home/speed-micro/program/usearch "
             "-beta_div " + work_Dir + "kraken2/result/bracken." + i + ".norm"
             "-filename_prefix" + work_Dir + "kraken2/result/beta")
-            os.system("Rscript /home/speedy-micro/script/beta_pcoa.R"
+            os.system("Rscript /home/Speedy-Mcrio/script/beta_pcoa.R"
                       "--input" + work_Dir + "kraken2/result/beta/"+i+".txt"
                       "--design "+sampleDescFilePath + " --group Group"
                       "--width 90 --height 60"
@@ -243,7 +243,10 @@ def main(argv):
         os.system("mkdir -p" + work_Dir + "/metaphlan4/refse ")
         os.system("source ~/.bashrc; conda activate mpa4;"
                   "metaphlan --version;"
-                  " ")
+                  "parallel - j" + jobsNumber + ""
+                  " \" metaphlan + " + fqFilePath + "\{1}_1.fastq\"" + fqFilePath + "\{1}_2.fastq"
+                  "--bowtie2out {1}_metagenome.bowtie2.bz2  --input_type fastq -o {1}_profiled_metagenome.txt "
+                  " ::: `tail -n+2 " + sampleDescFilePath + " | cut -f1` ")
 
 
         # species annotation
@@ -282,7 +285,7 @@ def main(argv):
                   "parallel -j " + jobsNumber +
                   " \"humann --input   \"  " + fqFilePath + "/{1}.fastq" 
                   "--output " + work_Dir + "/humann3/temp"
-                  "--threads 24 --metaphlan-options=\"--bowtie2db /root/db/mpa4 \" "
+                  "--threads " + threadsNumber + " --metaphlan-options=\"--bowtie2db /root/db/mpa4 \" "
                   "::: `tail -n+2 " + sampleDescFilePath + "| cut -f1 `;"
                   "source deactivate")
 

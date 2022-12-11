@@ -15,13 +15,14 @@ def main(argv):
     # get parameters
     conn.read(file_path, encoding='utf-8')
     fqFilePath = conn.get('parameters', 'fqFilePath')
-    qc = conn.get('parameters','qc')
+    qc = conn.get('parameters', 'qc')
     fastqc = conn.get('parameters', 'fastqc')
     adapters = conn.get('parameters', 'adapters')
     jobsNumber = conn.get('parameters', 'jobsNumber')
     threadsNumber = conn.get('parameters', 'threadsNumber')
     sampleDescFilePath = conn.get('parameters', 'sampleDescFilePath')
     kraken2 = conn.get('parameters', 'kraken2')
+    customDb = conn.get('parameters', 'customDb')
     metaphlan4 = conn.get('parameters', 'metaphlan4')
     humann3 = conn.get('parameters', 'humann3')
     databasePath = conn.get('parameters', 'databasePath')
@@ -86,11 +87,11 @@ def main(argv):
       "-db "+db+"/kneaddata/human_genome"
       "::: `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; "
       "conda deactivate QC")
-      # remove intermediate file
+      #remove intermediate file
       os.system("source ~/.bashrc ; conda activate QC;"
                 "for i in `tail -n+2 " + sampleDescFilePath + " ` | cut -f 1; do"
-                "rm -rf "+ work_Dir+"/temp/qc/${i}/*contam* "
-                + work_Dir +"/temp/qc/${i}/*unmatched* ; done"
+                "rm -rf " + work_Dir+"/temp/qc/${i}/*contam* "
+                + work_Dir + "/temp/qc/${i}/*unmatched* ; done"
                 "conda deactivate QC ")
     print("quality control ends!")
 
@@ -166,22 +167,73 @@ def main(argv):
 
         os.system("header=`tail -n 1 "+sampleDescFilePath + " | cut -f 1` ")
         os.system("tail -n+2 "+work_Dir+"/temp/kraken2/${header}.mpa | LC_ALL=C sort | cut -f 1 | "
-        "sed \"1 s/^/Taxonomy\n/\" > temp/kraken2/0header_count")
-        os.system(" ")
+        "sed \"1 s/^/Taxonomy\n/\" >  "+work_Dir+"temp/kraken2/0header_count")
+        os.system("paste" + work_Dir + "kraken2/temp/*count > " + work_Dir + "/kraken2/result/tax_count.mpa")
 
         print(" run Bracken !")
-
-
+        os.system("mkdir -p" + work_Dir + "/bracken/temp/")
+        species = ["D", "P", "C", "O", "F", "G", "S"]
+        for i in species:
+            os.system("source ~/.bashrc ; conda activate kraken2;"
+                      "for i in `tail -n+2`" + sampleDescFilePath + " | cut -f 1`; do"
+                      "bracken -d" + customDb + " -i " + work_Dir + "/kraken2/temp/${i}.report "
+                      "-r 100 -l "+i+"-t 0 -o" + work_Dir + "/bracken/temp/${i};done")
         print(" run visualization !")
 
+        os.system(" parallel -j " + jobsNumber +
+                  "tail -n+2 " + work_Dir + "/bracken/temp/{1}/{1}.mpa | LC_ALL=C sort |"
+                  " cut -f 2 | sed '1 s/^/{1}\n/' > " + work_Dir + "/bracken/temp/{1}/{1}_count"
+                  "::: `tail -n+2 " + sampleDescFilePath + " | cut -f1`")
 
+        os.system("header=`tail -n1 " + sampleDescFilePath + " +|cut -f1`"
+                 " 'tail -n+2 bracken/temp/{1} | LC_ALL=C sort | cut -f6 | sed \"1 s/^/{1}\n/\" > " "/bracken/{1}.count'")
 
-    # merge the data
-    if qc == "yes":
-        os.system(" for i in `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; do "
-                  " mkdir -p " + work_Dir + "/temp/merge"
-                  " cat" + work_Dir + "/temp/qc/${i}/${i}_?.fastq "
-                  " > " + " ")
+        for i in species:
+            os.system("paste " + work_Dir + " bracken/temp/*count > " + work_Dir + "/kraken2/result/bracken."+i+".txt;"
+            " grep 'Homo sapiens' " + work_Dir + "result/kraken2/result/bracken." + i + ".txt")
+            os.system("grep -v 'Homo sapiens' " + work_Dir + "/kraken2/result/bracken." + i + ".txt > " + work_Dir + "/kraken2/result/bracken." + i + ".-H ")
+
+        # visualization
+        os.system("Rscript  /home/script/kraken2alpha.R"
+                  "--input " + work_Dir + "/kraken2/result/tax_count.mpa"
+                  "--depth 0 "
+                  "--species " + work_Dir + "/kraken2/result/tax_count.norm"
+                  "--output " + work_Dir + "/kraken2/result/tax_count.alpha")
+        os.system("mkdir -p " + work_Dir + "/kraken2/result/alpha-kraken2")
+
+        alpha_diversity = ["chao1", "shannon", "invsimpson", "richness", "ACE",  "simpson"]
+        for i in alpha_diversity:
+            os.system("Rscript  /home/script/alpha_boxplot.R"
+                  "-i" + work_Dir + "/kraken2/result/tax_count.alpha"
+                  "-a" + i + "-d" + sampleDescFilePath + "-n Group -w 90 -e 60 -o " + work_Dir + "/kraken2/result/alpha;done")
+
+        print(" visualization for bracken! ")
+
+        for i in species:
+            os.system("Rscript /home/script/otutab_rare.R"
+            "--input " + work_Dir + "/kraken2/result/bracken." + i + ".-H"
+            "--depth 0 --seed 1"
+            "--normalize" + work_Dir + "/kraken2/result/bracken." + i + ".norm"
+            "--output " + work_Dir + "/kraken2/result/bracken." + i + ".alpha")
+
+        os.system("mkdir -p " + work_Dir + "/kraken2/result/alpha-bracken")
+        for i in alpha_diversity:
+            os.system("Rscript  /home/speedy-micro/script/alpha_boxplot.R"
+            "-i" + work_Dir + "/kraken2/result/bracken." + i + ".alpha"
+            "-a" + i + "-d" + sampleDescFilePath + "-n Group -w 90 -e 60 -o " + work_Dir + "/kraken2/result/alpha-bracken;done")
+
+        os.system("mkdir -p " + work_Dir + "/kraken2/result/beta")
+
+        beta_distance = ["euclidean", "manhattan", "jaccard", "bary_curtis"]
+        for i in beta_distance:
+            os.system("/home/speed-micro/program/usearch "
+            "-beta_div " + work_Dir + "kraken2/result/bracken." + i + ".norm"
+            "-filename_prefix" + work_Dir + "kraken2/result/beta")
+            os.system("Rscript /home/speedy-micro/script/beta_pcoa.R"
+                      "--input" + work_Dir + "kraken2/result/beta/"+i+".txt"
+                      "--design "+sampleDescFilePath + " --group Group"
+                      "--width 90 --height 60"
+                      "--output " + work_Dir + "kraken2/result/beta/")
 
     #
     if metaphlan4 == "yes":
@@ -189,6 +241,12 @@ def main(argv):
         os.system("source ~/.bashrc ; conda activate mpa4;"
                   " ")
 
+    # merge the data
+    if qc == "yes":
+        os.system(" for i in `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; do "
+        " mkdir -p " + work_Dir + "/temp/merge"
+        " cat" + work_Dir + "/temp/qc/${i}/${i}_?.fastq "
+                                                     " > " + " ")
 
     #  run humann3
     if humann3 == "yes":

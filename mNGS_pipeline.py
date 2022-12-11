@@ -235,37 +235,68 @@ def main(argv):
                       "--width 90 --height 60"
                       "--output " + work_Dir + "kraken2/result/beta/")
 
-    #
+
     if metaphlan4 == "yes":
-        print("run metaphlan4 for species annotation, please wait")
-        os.system("source ~/.bashrc ; conda activate mpa4;"
+        print("run metaphlan4 for species annotation, please wait!")
+        os.system("mkdir -p" + work_Dir + "/metaphlan4/result")
+        os.system("mkdir -p" + work_Dir + "/metaphlan4/temp")
+        os.system("mkdir -p" + work_Dir + "/metaphlan4/refse ")
+        os.system("source ~/.bashrc; conda activate mpa4;"
+                  "metaphlan --version;"
                   " ")
+
+
+        # species annotation
+
+        # lefse
+        print("lefse analysis")
+        os.system("source ~/.bashrc; conda activate lefse;"
+                  "mkdir -p" + work_Dir + "/metaphlan4/lefse "
+                  "lefse_format_input.py " + work_Dir + "/metaphlan4/result/lefse.txt" + work_Dir + "/metaphlan4/temp/input.in"
+                  "-c 1 -o 1000000")
+        os.system("run_lefse.py " + work_Dir + "/metaphlan4/temp/input.in" + work_Dir + "/metaphlan4/temp/input.res")
+        os.system("lefse_plot_cladogram.py" + work_Dir + "/metaphlan4/temp/input.res" + work_Dir + "/metaphlan4/refse/lefse_res.pdf --format pdf")
+        os.system(" mkdir -p" + work_Dir + "/metaphlan4/refse_all")
+        os.system("lefse_plot_feature.py -f diff "
+                  "--archive none --format pdf"
+                  + work_Dir + "/metaphlan4/temp/input.in"
+                  + work_Dir + "/metaphlan4/temp/input.res")
 
     # merge the data
     if qc == "yes":
         os.system(" for i in `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; do "
         " mkdir -p " + work_Dir + "/temp/merge"
-        " cat" + work_Dir + "/temp/qc/${i}/${i}_?.fastq "
-                                                     " > " + " ")
+        " cat" + work_Dir + "/temp/qc/${i}/${i}_?.fastq " " > " + " ")
 
     #  run humann3
     if humann3 == "yes":
         print("run humann3 for function annotation, please wait")
         # paired reads merge
+        os.system("mkdir -p " + work_Dir + "/humann3;"
+                  "mkdir -p " + work_Dir + "/humann3/temp;"
+                  "mkdir -p " + work_Dir + "/humann3/result;")
 
         os.system("source ~/.bashrc ; conda activate humann3;"
-                  "     "
-                  "     "
-                  "     "
-                  "     ")
+                  "humann --version;"
+                  "humann_config;"
+                  "parallel -j " + jobsNumber +
+                  " \"humann --input   \"  " + fqFilePath + "/{1}.fastq" 
+                  "--output " + work_Dir + "/humann3/temp"
+                  "--threads 24 --metaphlan-options=\"--bowtie2db /root/db/mpa4 \" "
+                  "::: `tail -n+2 " + sampleDescFilePath + "| cut -f1 `;"
+                  "source deactivate")
 
-
-        os.system("conda deactivate")
-
+        os.system("humann_join_tables"
+                  "--input " + work_Dir + "/humann3/temp;"
+                  "--file_name pathabundance"
+                  "--output " + work_Dir + "/humann3/result/pathabundance.tsv;")
+        os.system("humann_renorm_table"
+              "--input " + work_Dir + "/humann3/result/pathabundance.tsv;"
+              "--inits relab"
+              "--output " + work_Dir + "/humann3/result/pathabundance_relab.tsv;")
 
     # run visualization
 
-    # lefse
 
 
 

@@ -2,7 +2,7 @@
 
 ### Step 1: install docker
 
-install docker (Administrator privileges are required)
+  install docker (Administrator privileges are required)
 
 ### Step 2: pull docker images
 

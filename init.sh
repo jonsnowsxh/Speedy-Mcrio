@@ -1,16 +1,16 @@
-yum install wget -y
 
-wget -c https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b -f
-
-source ~/.bashrc
-
-conda config --add channels conda-forge
-conda config --add channels bioconda
-
-conda install conda-pack -c conda-forge -y
 
 cd /dockr-packages/
+
+wget https://speedy-mcrio.oss-cn-hangzhou.aliyuncs.com/humann3.tar.gz
+
+wget https://speedy-mcrio.oss-cn-hangzhou.aliyuncs.com/kneaddata.tar.gz
+
+wget https://speedy-mcrio.oss-cn-hangzhou.aliyuncs.com/kraken2.tar.gz
+
+wget https://speedy-mcrio.oss-cn-hangzhou.aliyuncs.com/lefse.tar.gz
+
+wget https://speedy-mcrio.oss-cn-hangzhou.aliyuncs.com/qc.tar.gz
 
 mkdir -p /root/miniconda3/envs/humann3
 tar -xzf humann3.tar.gz /root/miniconda3/envs/humann3
@@ -23,9 +23,6 @@ tar -xzf kraken2.tar.gz /root/miniconda3/envs/kraken2
 
 mkdir -p /root/miniconda3/envs/lefse
 tar -xzf lefse.tar.gz /root/miniconda3/envs/lefse
-
-mkdir -p /root/miniconda3/envs/mpa4
-tar -xzf mpa4.tar.gz /root/miniconda3/envs/mpa4
 
 mkdir -p /root/miniconda3/envs/qc
 tar -xzf qc.tar.gz /root/miniconda3/envs/qc

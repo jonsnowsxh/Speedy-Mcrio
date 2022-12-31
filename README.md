@@ -7,7 +7,7 @@
 ### Step 2: pull docker images
 
 ```
-docker push sidney123/sidreposit:Speedy-Mcrio
+docker pull sidney123/sidreposit:Speedy-Mcrio
 ```
 
 ### Step 3: Entering the docker container, download source code

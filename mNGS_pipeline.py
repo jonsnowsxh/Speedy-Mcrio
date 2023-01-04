@@ -26,6 +26,7 @@ def main(argv):
     metaphlan4 = conn.get('parameters', 'metaphlan4')
     humann3 = conn.get('parameters', 'humann3')
     databasePath = conn.get('parameters', 'databasePath')
+    pathwayDesPath = conn.get('parameters', 'pathwayDesPath')
 
     # process
     if not fqFilePath:

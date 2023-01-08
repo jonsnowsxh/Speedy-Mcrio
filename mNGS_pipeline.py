@@ -74,26 +74,26 @@ def main(argv):
     print("step1:running quality control! ")
 
     if qc == 'yes':
-      os.system("source ~/.bashrc ; conda activate QC;"
+      os.system("source ~/.bashrc ; conda activate qc;"
       "kneaddata --version;"
       "trimmomatic --version;"
       "bowtie2 --version;"
       "time parallel -j "+jobsNumber +
       "kneaddata -i " + fqFilePath + "/{1}_1.fq.gz -i " + fqFilePath + "/{1}_2.fq.gz"
-      "-o " + work_Dir + "/temp/qc/{1} -v -t 4 --remove-intermediate-output"
+      "-o " + work_Dir + "/qc/temp/{1} -v -t " + threadsNumber + " --remove-intermediate-output"
       "--trimmomatic "+envirs+"/fastqc/share/trimmomatic/ "
       "--trimmomatic-options 'ILLUMINACLIP:"+envirs+"/fastqc/share/trimmomatic/adapters/" + adapters + ":2:40:15 "
       "SLIDINGWINDOW:10:20 MINLEN:50 -threads " + threadsNumber + "'"
       "--reorder --bowtie2-options '--very-sensitive --dovetail'"
       "-db "+db+"/kneaddata/human_genome"
       "::: `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; "
-      "conda deactivate QC")
+      "conda deactivate qc")
       # remove intermediate file
-      os.system("source ~/.bashrc ; conda activate QC;"
+      os.system("source ~/.bashrc ; conda activate qc;"
                 "for i in `tail -n+2 " + sampleDescFilePath + " ` | cut -f 1; do"
-                "rm -rf " + work_Dir+"/temp/qc/${i}/*contam* "
-                + work_Dir + "/temp/qc/${i}/*unmatched* ; done"
-                "conda deactivate QC ")
+                "rm -rf " + work_Dir+"/qc/temp/${i}/*contam* "
+                + work_Dir + "/qc/temp/${i}/*unmatched* ; done"
+                "conda deactivate qc ")
     print("quality control ends!")
 
     # run fastqc,checking quality control, generate report
@@ -105,11 +105,11 @@ def main(argv):
             os.system("source ~/.bashrc ; conda activate fastqc;"
                   "fastqc --version;"
                   "time parallel -j "+jobsNumber +
-                  "fastqc " + work_Dir + "/temp/qc/{1}/*_paired_?.fastq -t 4; "
+                  "fastqc " + work_Dir + "/qc/temp/{1}/*_paired_?.fastq -t 4; "
                   "::: `tail -n+2 " + sampleDescFilePath + " | cut -f 1`;"
                   "mkdir -p " + work_Dir + "/qc_report ;"
                   "for i in `tail -n+2 " + sampleDescFilePath + " ` | cut -f 1; do"
-                  "mv " + work_Dir + "/temp/qc/{1}/*_fastqc.zip " + work_Dir + "qc_report;" )
+                  "mv " + work_Dir + "/qc/temp/{1}/*_fastqc.zip " + work_Dir + "qc_report;")
         else:
             print("run fastqc!")
             os.system("source ~/.bashrc ; conda activate fastqc;"
@@ -136,15 +136,15 @@ def main(argv):
     # run kraken2 and Braken
     if kraken2 == "yes":
         print("run Kraken2 analyse")
-        os.system(" mkdir -p " + work_Dir + "/temp/kraken2")
+        os.system(" mkdir -p " + work_Dir + "/kraken2/temp")
 
         if qc == 'yes':
             os.system("source ~/.bashrc ; conda activate kraken2;"
             "parallel -j "+jobsNumber+" "
             "kraken2 --db"+db+"/kraken2 --paired "+work_Dir+"/temp/qc/{1}/{1}_1_kneaddata_paired_?.fastq"
             "--threads " + threadsNumber + " --use-names --report-zero-counts"
-            "--report "+work_Dir+"/temp/kraken2/{1}/{1}.report"
-            "--output "+work_Dir+"/temp/kraken2/{1}/{1}.output"
+            "--report "+work_Dir+"/kraken2/temp/{1}/{1}.report"
+            "--output "+work_Dir+"/kraken2/temp/{1}/{1}.output"
             "::: `tail -n+2 " + sampleDescFilePath + " | cut -f1`"
             "conda deactivate kraken2")
         else:
@@ -152,23 +152,23 @@ def main(argv):
             "parallel -j " + jobsNumber + " "
             "kraken2 --db" + db + "/kraken2 --paired " + fqFilePath + "/{1}_paired_?.fastq"
             "--threads " + threadsNumber + " --use-names --report-zero-counts"
-            "--report " + work_Dir + "/temp/kraken2/{1}/{1}.report"
-            "--output " + work_Dir + "/temp/kraken2/{1}/{1}.output"
+            "--report " + work_Dir + "/kraken2/temp/{1}/{1}.report"
+            "--output " + work_Dir + "/kraken2/temp/{1}/{1}.output"
             "::: `tail -n+2 " + sampleDescFilePath + " | cut -f1`"
             "conda deactivate kraken2")
 
         os.system(" for i in `tail -n+2 " + sampleDescFilePath + " | cut -f 1`;do "
-        "kreport2mpa.py -r +"+work_Dir+"/temp/kraken2/${i}/${i}.report"
+        "kreport2mpa.py -r +"+work_Dir+"/kraken2/temp/${i}/${i}.report"
         "--display-header"
-        "-o "+work_Dir+"/temp/kraken2/${i}/${i}.mpa;done")
+        "-o "+work_Dir+"/kraken2/temp/${i}/${i}.mpa;done")
 
         os.system(" parallel -j "+jobsNumber +
-        "tail -n+2 "+work_Dir+"/temp/kraken2/{1}/{1}.mpa | LC_ALL=C sort | cut -f 2 | sed '1 s/^/{1}\n/' > "+work_Dir+"/temp/kraken2/{1}/{1}_count" 
+        "tail -n+2 "+work_Dir+"/kraken2/temp/{1}/{1}.mpa | LC_ALL=C sort | cut -f 2 | sed '1 s/^/{1}\n/' > "+work_Dir+"/kraken2/temp/{1}/{1}_count" 
         "::: `tail -n+2 " + sampleDescFilePath + " | cut -f1`")
 
         os.system("header=`tail -n 1 "+sampleDescFilePath + " | cut -f 1` ")
-        os.system("tail -n+2 "+work_Dir+"/temp/kraken2/${header}.mpa | LC_ALL=C sort | cut -f 1 | "
-        "sed \"1 s/^/Taxonomy\n/\" >  "+work_Dir+"temp/kraken2/0header_count")
+        os.system("tail -n+2 "+work_Dir+"/kraken2/temp/${header}.mpa | LC_ALL=C sort | cut -f 1 | "
+        "sed \"1 s/^/Taxonomy\n/\" >  "+work_Dir+"/kraken2/temp/0header_count")
         os.system("paste" + work_Dir + "kraken2/temp/*count > " + work_Dir + "/kraken2/result/tax_count.mpa")
 
         print(" run Bracken !")
@@ -191,7 +191,7 @@ def main(argv):
 
         for i in species:
             os.system("paste " + work_Dir + " bracken/temp/*count > " + work_Dir + "/kraken2/result/bracken."+i+".txt;"
-            " grep 'Homo sapiens' " + work_Dir + "result/kraken2/result/bracken." + i + ".txt")
+            " grep 'Homo sapiens' " + work_Dir + "/kraken2/result/bracken." + i + ".txt")
             os.system("grep -v 'Homo sapiens' " + work_Dir + "/kraken2/result/bracken." + i + ".txt > " + work_Dir + "/kraken2/result/bracken." + i + ".-H ")
 
         # visualization
@@ -300,9 +300,16 @@ def main(argv):
               "--output " + work_Dir + "/humann3/result/pathabundance_relab.tsv;")
 
     # run visualization
+        os.system(" head -n1  " + work_Dir + "/humann3/result/pathabundance.tsv | sed 's/# Pathway/SampleID/' | tr '\t' '\n' " + work_Dir + " /humann3/result/header ")
+        os.system(" awk 'BEGIN{FS=OFS=\"\t\"}NR==FNR{a[$1]=$2}NR>FNR{print a[$1]}' " + sampleDescFilePath + " " + work_Dir + "/humann3/result/header " + " | tr '\n' '\t'|sed 's/\t$/\n/' > " + work_Dir + " /humann3/result/group")
+        os.system(" cat <(head -n1 " + work_Dir + "humann3/result/pathabundance.tsv) " + work_Dir + "/humann3/result/group <(tail -n+2 " + work_Dir+" humann3/result/pathabundance.tsv) \
+      > " + work_Dir + "humann3/result/pathabundance.pcl  ")
 
-
-
+    # bar plot
+        os.system(" for i in `tail -n+2 " + pathwayDesPath + " | cut -f1`;do     humann_barplot --sort sum metadata \
+        --input " + work_Dir + "humann3/result/pathabundance.pcl " + "--focal-feature ${i} \
+        --focal-metadata Group \
+        --output " + work_Dir + " humann3/result/barplot_${i}.pdf")
 
 
 if __name__ == "__main__":

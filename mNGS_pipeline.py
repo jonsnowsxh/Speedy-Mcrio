@@ -251,7 +251,6 @@ def main(argv):
 
 
         # species annotation
-
         # lefse
         print("lefse analysis")
         os.system("source ~/.bashrc; conda activate lefse;"
@@ -305,7 +304,7 @@ def main(argv):
         os.system(" cat <(head -n1 " + work_Dir + "humann3/result/pathabundance.tsv) " + work_Dir + "/humann3/result/group <(tail -n+2 " + work_Dir+" humann3/result/pathabundance.tsv) \
       > " + work_Dir + "humann3/result/pathabundance.pcl  ")
 
-    # bar plot
+    # barplot pathway composition
         os.system(" for i in `tail -n+2 " + pathwayDesPath + " | cut -f1`;do     humann_barplot --sort sum metadata \
         --input " + work_Dir + "humann3/result/pathabundance.pcl " + "--focal-feature ${i} \
         --focal-metadata Group \

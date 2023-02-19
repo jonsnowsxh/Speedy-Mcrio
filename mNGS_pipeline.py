@@ -45,9 +45,6 @@ def main(argv):
         print("default threads Number 4!")
         threadsNumber = 1
 
-
-
-
     # create workDir
     curDir = os.getcwd()
     curtime = time.strftime("%Y-%m-%d", time.localtime())
@@ -267,7 +264,7 @@ def main(argv):
         os.system("source ~/.bashrc; conda activate mpa4; merge_metaphlan_tables.py " + work_Dir + "/metaphlan4/temp/{1}.merged_abundance_table.txt  sed 's/_metaphlan_bugs_list//g' > " + work_Dir + "metaphlan4/result/merged_abundance_table.txt")
         os.system("source ~/.bashrc; conda activate mpa4; metaphlan_to_stamp.pl " + work_Dir + "  /metaphlan4/result/taxonomy.tsv > "+work_Dir+" metaphlan4/result/taxonomy.spf ")
 
-        #visualization
+        # visualization
         os.system("hclust2.py \
         -i  " + work_Dir + "metaphlan4/result/merged_abundance_table.txt\
         -o " + work_Dir + "metaphlan4/result/merged_abundance_table.txt \

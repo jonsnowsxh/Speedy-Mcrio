@@ -2,7 +2,7 @@
 
 ### Step 1: install docker
 
-  install docker (Administrator privileges are required)
+  install Docker (Administrator privileges are required)
 
 ### Step 2: pull docker images
 
@@ -23,9 +23,13 @@ unzip master.zip
 ./init.sh
 ```
 
-### Step 5: run script
+### Step 5: config file
+
+```
+revise the config file according to your goal
+```
+### Step 6:  run script
 
 ```
 python mNGS_pipeline.py
 ```
-

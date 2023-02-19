@@ -3,6 +3,8 @@ from configparser import ConfigParser
 import os
 import time
 
+import print as print
+
 
 def main(argv):
 
@@ -252,28 +254,15 @@ def main(argv):
         os.system("source ~/.bashrc; conda activate mpa4; merge_metaphlan_tables.py " + work_Dir + "/metaphlan4/temp/{1}.merged_abundance_table.txt  sed 's/_metaphlan_bugs_list//g' > " + work_Dir + "metaphlan4/result/merged_abundance_table.txt")
         os.system("source ~/.bashrc; conda activate mpa4; metaphlan_to_stamp.pl " + work_Dir + "  /metaphlan4/result/taxonomy.tsv > "+work_Dir+" metaphlan4/result/taxonomy.spf ")
 
-
-
         #visualization
         os.system("hclust2.py \
         -i  " + work_Dir + "metaphlan4/result/merged_abundance_table.txt\
         -o " + work_Dir + "metaphlan4/result/merged_abundance_table.txt \
-        --skip_rows 1 \
-        --ftop 50 \
-        --f_dist_f correlation \
-        --s_dist_f braycurtis \
-        --cell_aspect_ratio 9 \
-        -s --fperc 99 \
-        --flabel_size 4 \
-        --legend_file HMP.sqrt_scale.legend.png \
-        --max_flabel_len 100 \
-        --metadata_height 0.075 \
-        --minv 0.01 \
-        --no_slabels \
-        --dpi 300 \
-        --slinkage complete ")
-
-
+        --skip_rows 1 --ftop 50  --f_dist_f correlation --s_dist_f braycurtis \
+        --cell_aspect_ratio 9 -s --fperc 99 --flabel_size 4 \
+        --legend_file HMP.sqrt_scale.legend.png --max_flabel_len 100 \
+        --metadata_height 0.075 --minv 0.01 \
+        --no_slabels --dpi 300 --slinkage complete ")
 
         # species annotation
         # lefse

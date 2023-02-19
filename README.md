@@ -33,3 +33,6 @@ revise the config file according to your goal
 ```
 python mNGS_pipeline.py
 ```
+### REQUIREMENTS
+
+In order to use Speedy-Crio, we recommend that users use administrator privileges, preferably the root account. At the same time, we also recommend that users use this Pipeline on the server

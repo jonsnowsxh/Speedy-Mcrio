@@ -21,14 +21,6 @@ def main(argv):
               "humann_databases --download uniref uniref90_diamond  root/db/humann3/uniref")
     print("database download successful!")
 
-    # human gene download
-    print("human gene download!")
-    os.system("mkdir -p /root/database/kneaddata/human_genome;"
-              "cd /root/database/kneaddata/human_genome;"
-              "wget -c ftp://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/*fa.gz;"
-              "gunzip *fa.gz;"
-              "cat *fa > hg38.fa;"
-              "rm chr*.fa")
 
 
 if __name__ == "__main__":

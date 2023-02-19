@@ -29,6 +29,7 @@ def main(argv):
     humann3 = conn.get('parameters', 'humann3')
     databasePath = conn.get('parameters', 'databasePath')
     pathwayDesPath = conn.get('parameters', 'pathwayDesPath')
+    host_genome = conn.get('host_genome_path', 'host_genome_path')
 
     # process
     if not fqFilePath:
@@ -44,6 +45,9 @@ def main(argv):
         print("default threads Number 4!")
         threadsNumber = 1
 
+
+
+
     # create workDir
     curDir = os.getcwd()
     curtime = time.strftime("%Y-%m-%d", time.localtime())
@@ -57,18 +61,29 @@ def main(argv):
     envirs = os.getenv["envirs"]
     db = os.getenv["db"]
 
-    # database download
-    # default database
-    if databasePath == "yes":
 
-        print("use default database")
-        print("download database, it will take a lot of time, please wait!")
-        print("--------------------------------------------------------------")
-        # humann3 database download
-        os.system("sudo mkdir -p root/humann3")
-        os.system("sudo mkdir -p root/humann3/utility_mapping")
-        os.system("sudo mkdir -p root/humann3/chocophlan")
-        os.system("sudo mkdir -p root/humann3/uniref")
+    # default database download
+    if customDb == "default":
+        print("using Kraken2  default database")
+        print("-------------------------------")
+        # Kraken2 database download
+        os.system("mkdir -p /root/database/kraken2")
+        os.system("cd /root/database/kraken2;"
+        "wget https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_16gb_20221209.tar.gz")
+
+    # human genome download
+
+    if host_genome == "default":
+        print("human gene download!")
+        os.system("mkdir -p /root/database/kneaddata/human_genome;"
+              "cd /root/database/kneaddata/human_genome;"
+              "wget -c ftp://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/*fa.gz;"
+              "gunzip *fa.gz;"
+              "cat *fa > hg38.fa;"
+              "rm chr*.fa")
+    if host_genome == "default":
+        host_genome == "/root/database/kneaddata/human_genome"
+
 
     # quality control, kneaddata, trimmomatic + bowtie2
     print("step1:running quality control! ")
@@ -85,7 +100,7 @@ def main(argv):
       "--trimmomatic-options 'ILLUMINACLIP:"+envirs+"/fastqc/share/trimmomatic/adapters/" + adapters + ":2:40:15 "
       "SLIDINGWINDOW:10:20 MINLEN:50 -threads " + threadsNumber + "'"
       "--reorder --bowtie2-options '--very-sensitive --dovetail'"
-      "-db "+db+"/kneaddata/human_genome"
+      "-db "+host_genome+""
       "::: `tail -n+2 " + sampleDescFilePath + " | cut -f 1`; "
       "conda deactivate qc")
       # remove intermediate file

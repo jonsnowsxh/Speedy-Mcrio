@@ -3,7 +3,7 @@ from configparser import ConfigParser
 import os
 import time
 
-import print as print
+import print
 
 
 def main(argv):
@@ -24,7 +24,7 @@ def main(argv):
     threadsNumber = conn.get('parameters', 'threadsNumber')
     sampleDescFilePath = conn.get('parameters', 'sampleDescFilePath')
     kraken2 = conn.get('parameters', 'kraken2')
-    customDb = conn.get('parameters', 'customDb')
+    customDb = conn.get('parameters', 'Kraken2_db_Path')
     metaphlan4 = conn.get('parameters', 'metaphlan4')
     humann3 = conn.get('parameters', 'humann3')
     databasePath = conn.get('parameters', 'databasePath')
@@ -37,8 +37,6 @@ def main(argv):
     if not sampleDescFilePath:
         print("error! please input sampleDescFile file path !")
         return
-    if not databasePath:
-        print("error! please input database path !")
     if not jobsNumber:
         print("default parallel number 1!")
         jobsNumber = 1

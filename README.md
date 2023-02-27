@@ -37,5 +37,5 @@ python mNGS_pipeline.py
 ### REQUIREMENTS
 
 ```
-In order to use Speedy-Mcrio, we recommend that users use administrator privileges, preferably the root account. At the same time, we also recommend that users use this Pipeline on the server.
+In order to use Speedy-Mcrio, we recommend that you use administrator privileges, preferably the root account. At the same time, we also recommend that you use this Pipeline on the server.
 ```

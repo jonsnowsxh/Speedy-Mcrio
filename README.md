@@ -1,8 +1,9 @@
 
 
 ### Step 1: install docker
-
-  install Docker (Administrator privileges are required)
+```
+ install Docker (Administrator privileges are required)
+```
 
 ### Step 2: pull docker images
 
@@ -35,4 +36,6 @@ python mNGS_pipeline.py
 ```
 ### REQUIREMENTS
 
+```
 In order to use Speedy-Mcrio, we recommend that users use administrator privileges, preferably the root account. At the same time, we also recommend that users use this Pipeline on the server.
+```

@@ -42,7 +42,7 @@ def main(argv):
         print("default parallel number 1!")
         jobsNumber = 1
     if not threadsNumber:
-        print("default threads Number 4!")
+        print("default threads Number 1!")
         threadsNumber = 1
 
     # create workDir
@@ -66,7 +66,8 @@ def main(argv):
         # Kraken2 database download
         os.system("mkdir -p /root/database/kraken2")
         os.system("cd /root/database/kraken2;"
-        "wget https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_16gb_20221209.tar.gz")
+        "wget https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_16gb_20221209.tar.gz;"
+        "tar -zcvf genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_16gb_20221209.tar.gz")
 
     # human genome download
 

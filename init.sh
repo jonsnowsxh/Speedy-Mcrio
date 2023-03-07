@@ -27,5 +27,5 @@ tar -xzf lefse.tar.gz -C /root/miniconda3/envs/lefse
 mkdir -p /root/miniconda3/envs/qc
 tar -xzf qc.tar.gz -C /root/miniconda3/envs/qc
 
-
+python db_download.py
 

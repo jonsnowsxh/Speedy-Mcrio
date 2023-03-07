@@ -21,7 +21,7 @@ unzip master.zip
 ### Step 4:  init environment
 
 ```
-./init.sh
+./init.sh (This step takes a lot of time, because it includes the download of the database, and sometimes it may fail due to network reasons)
 ```
 
 ### Step 5: config file
